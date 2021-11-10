@@ -1,18 +1,38 @@
 package repe.sec;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import repe.sec.data.Customer;
+import repe.sec.data.MyCustomerReposition;
+import repe.sec.data.Role;
+import repe.sec.encoder.MyPasswordEncoder;
+
 
 @SpringBootApplication
 @RestController
 public class SecApplication {
 
+	@Autowired
+	MyCustomerReposition myRepo;
+
+	@Autowired
+	MyPasswordEncoder encoder;
+
 	public static void main(String[] args) {
 		SpringApplication.run(SecApplication.class, args);
+	}
+
+	@PostConstruct
+	public void init(){
+		myRepo.save(new Customer("reima", "reimarii", encoder.encode("asd1"), Role.ADMIN));
+		myRepo.save(new Customer("lisa", "liisuli", encoder.encode("aaabbb"), Role.CUSTOMER));
 	}
 
 	@GetMapping("/public")
