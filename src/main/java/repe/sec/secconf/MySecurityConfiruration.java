@@ -7,7 +7,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import repe.sec.data.Role;
 import repe.sec.encoder.MyPasswordEncoder;
@@ -30,11 +32,22 @@ public class MySecurityConfiruration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
+        http.csrf().disable();
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
         http.authorizeRequests().antMatchers("/public/**").permitAll();
 
-        http.authorizeRequests().antMatchers(HttpMethod.GET, "/admin/**").hasAnyAuthority(Role.ADMIN.toString());
+        http.authorizeRequests().antMatchers("/admin/**").hasAnyAuthority(Role.ADMIN.toString());
+        http.authorizeRequests().antMatchers("/customer/**").hasAnyAuthority(Role.CUSTOMER.toString());
 
-        http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
+        http.authorizeRequests().anyRequest().authenticated();
+
+        //create custom authentication filter
+        UsernamePasswordAuthenticationFilter myAuthFilter = new MyAuthenticationFilter();
+        myAuthFilter.setAuthenticationManager( this.authenticationManager() );
+        http.addFilter(myAuthFilter);
+
+        http.addFilterBefore(new MyAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
 
     }
 }

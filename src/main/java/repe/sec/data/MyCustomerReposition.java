@@ -5,4 +5,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface MyCustomerReposition extends JpaRepository<Customer, String> {
+    public Customer findByUsername(String username);
 }
